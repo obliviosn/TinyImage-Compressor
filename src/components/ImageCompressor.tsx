@@ -110,10 +110,10 @@ export function ImageCompressor() {
             </h1>
           </div>
           <p className="max-w-2xl mx-auto text-xl font-medium text-emerald-50 sm:text-2xl">
-            Smart WebP, PNG and JPEG compression
+            智能 WebP、PNG 和 JPEG 压缩
           </p>
           <p className="mt-4 text-emerald-100 max-w-xl mx-auto">
-            More than 1 billion WebP, PNG and JPEG images compressed and still counting!
+            已压缩超过 10 亿张 WebP、PNG 和 JPEG 图片，并且还在不断增加！
           </p>
         </div>
       </header>

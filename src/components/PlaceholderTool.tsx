@@ -31,9 +31,9 @@ export function PlaceholderTool({ title, description }: PlaceholderToolProps) {
       <main className="relative z-20 px-4 pb-24 -mt-24">
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8 sm:p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
           <Wrench className="w-16 h-16 text-slate-300 mb-4" />
-          <h2 className="text-2xl font-bold text-slate-700 mb-2">Coming Soon</h2>
+          <h2 className="text-2xl font-bold text-slate-700 mb-2">敬请期待</h2>
           <p className="text-slate-500 max-w-md mx-auto">
-            We are working hard to bring you this new tool. Check back later for updates!
+            我们正在努力为您带来这个新工具。请稍后再来看看更新！
           </p>
         </div>
       </main>

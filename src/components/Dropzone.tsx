@@ -84,10 +84,10 @@ export function Dropzone({ onFilesAdded }: DropzoneProps) {
         </div>
         <div>
           <p className="text-xl font-semibold text-slate-700">
-            Drop your WebP, PNG or JPEG files here!
+            将您的 WebP、PNG 或 JPEG 文件拖放到此处！
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            Up to 20 images, max 5 MB each.
+            最多 20 张图片，每张最大 5 MB。
           </p>
         </div>
       </div>

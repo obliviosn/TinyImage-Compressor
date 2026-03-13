@@ -59,14 +59,14 @@ export function FileItem({ file, onDownload }: FileItemProps) {
         {isCompressing && (
           <div className="flex items-center text-slate-500 text-sm">
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Compressing...
+            压缩中...
           </div>
         )}
 
         {isError && (
           <div className="flex items-center text-red-500 text-sm">
             <AlertCircle className="w-4 h-4 mr-1" />
-            <span className="truncate max-w-[100px]">{file.error || 'Error'}</span>
+            <span className="truncate max-w-[100px]">{file.error || '错误'}</span>
           </div>
         )}
 

@@ -130,16 +130,16 @@ export function MockupGenerator() {
       {/* Controls Sidebar */}
       <div className="w-full lg:w-80 flex flex-col gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 shrink-0">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Mockup Settings</h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">截图设置</h3>
           
           {/* Upload */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Image</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">图片</label>
             <label className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-slate-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-emerald-400 focus:outline-none">
               <span className="flex items-center space-x-2">
                 <Upload className="w-6 h-6 text-slate-400" />
                 <span className="font-medium text-slate-600">
-                  {image ? 'Change Image' : 'Upload Image'}
+                  {image ? '更换图片' : '上传图片'}
                 </span>
               </span>
               <input type="file" name="file_upload" className="hidden" accept="image/*" onChange={handleImageUpload} />
@@ -148,28 +148,28 @@ export function MockupGenerator() {
 
           {/* Device Category */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">设备类型</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setDeviceCategory('browser')}
                 className={`flex-1 flex flex-col items-center justify-center py-2 rounded-lg border transition-colors ${deviceCategory === 'browser' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <Layout className="w-5 h-5 mb-1" />
-                <span className="text-xs font-medium">Browser</span>
+                <span className="text-xs font-medium">浏览器</span>
               </button>
               <button
                 onClick={() => setDeviceCategory('mobile')}
                 className={`flex-1 flex flex-col items-center justify-center py-2 rounded-lg border transition-colors ${deviceCategory === 'mobile' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <Smartphone className="w-5 h-5 mb-1" />
-                <span className="text-xs font-medium">Device</span>
+                <span className="text-xs font-medium">移动设备</span>
               </button>
             </div>
           </div>
 
           {/* Sub-type */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Platform</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">平台</label>
             {deviceCategory === 'browser' ? (
               <div className="flex gap-2">
                 {(['mac', 'windows', 'linux'] as BrowserType[]).map((type) => (
@@ -199,7 +199,7 @@ export function MockupGenerator() {
 
           {/* Background */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Background</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">背景</label>
             <div className="flex flex-wrap gap-3">
               {bgColors.map((color) => (
                 <button
@@ -215,7 +215,7 @@ export function MockupGenerator() {
 
           {/* Padding */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Padding</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">内边距</label>
             <div className="flex gap-2">
               {(['sm', 'md', 'lg'] as Padding[]).map((p) => (
                 <button
@@ -236,7 +236,7 @@ export function MockupGenerator() {
             className={`w-full flex items-center justify-center py-3 px-4 rounded-xl font-semibold text-white transition-colors ${image ? 'bg-emerald-500 hover:bg-emerald-600 shadow-md hover:shadow-lg' : 'bg-slate-300 cursor-not-allowed'}`}
           >
             <Download className="w-5 h-5 mr-2" />
-            Export Mockup
+            导出截图
           </button>
         </div>
       </div>
@@ -246,7 +246,7 @@ export function MockupGenerator() {
         {!image ? (
           <div className="text-slate-400 flex flex-col items-center">
             <Monitor className="w-16 h-16 mb-4 opacity-50" />
-            <p className="text-lg font-medium">Upload an image to see the preview</p>
+            <p className="text-lg font-medium">上传图片以查看预览</p>
           </div>
         ) : (
           <div className="overflow-auto max-h-full max-w-full p-4 flex items-center justify-center w-full h-full">

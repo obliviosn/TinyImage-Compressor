@@ -11,10 +11,10 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const tabs = [
-    { id: 'image', name: 'Image Compressor', icon: Leaf },
-    { id: 'mockup', name: 'Mockup Generator', icon: MonitorSmartphone },
-    { id: 'pdf', name: 'PDF Tools', icon: FileText },
-    { id: 'converter', name: 'Format Converter', icon: Settings },
+    { id: 'image', name: '图片压缩', icon: Leaf },
+    { id: 'mockup', name: '带壳截图', icon: MonitorSmartphone },
+    { id: 'pdf', name: 'PDF 工具', icon: FileText },
+    { id: 'converter', name: '格式转换', icon: Settings },
   ] as const;
 
   return (
@@ -101,22 +101,22 @@ export default function App() {
         {activeTab === 'mockup' && <MockupGenerator />}
         {activeTab === 'pdf' && (
           <PlaceholderTool 
-            title="PDF Tools" 
-            description="Merge, split, and compress PDF files easily." 
+            title="PDF 工具" 
+            description="轻松合并、拆分和压缩 PDF 文件。" 
           />
         )}
         {activeTab === 'converter' && (
           <PlaceholderTool 
-            title="Format Converter" 
-            description="Convert images between WebP, PNG, JPEG, and more." 
+            title="格式转换" 
+            description="在 WebP、PNG、JPEG 等格式之间转换图片。" 
           />
         )}
       </div>
 
       {/* Footer */}
       <footer className="py-12 text-center text-slate-500 bg-slate-100 mt-auto">
-        <p>Inspired by TinyPNG. Built with React and Tailwind CSS.</p>
-        <p className="mt-2 text-sm">All processing happens locally in your browser.</p>
+        <p>灵感来自 TinyPNG。使用 React 和 Tailwind CSS 构建。</p>
+        <p className="mt-2 text-sm">所有处理均在您的浏览器中本地完成。</p>
       </footer>
     </div>
   );
