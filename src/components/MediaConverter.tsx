@@ -42,6 +42,7 @@ interface ConvertedMedia {
   targetFormat: string;
   error?: string;
   duration?: number;
+  progress?: number;
 }
 
 const SUPPORTED_FORMATS = [
@@ -75,7 +76,7 @@ export function MediaConverter() {
     try {
       const ffmpeg = ffmpegRef.current;
       ffmpeg.on('log', ({ message }) => {
-        console.log(message);
+        console.log('[FFmpeg Log]', message);
       });
       
       await ffmpeg.load({
@@ -87,7 +88,7 @@ export function MediaConverter() {
       setIsReady(true);
     } catch (e) {
       console.error('FFmpeg load failed', e);
-      setLoadError('音频转换引擎加载失败，请检查网络或刷新重试。');
+      setLoadError('多媒体转换引擎加载失败，请检查网络或刷新重试。');
     } finally {
       isInitializingRef.current = false;
     }
@@ -97,49 +98,81 @@ export function MediaConverter() {
     loadFFmpeg();
   }, []);
 
-  const convertAudio = async (file: File, targetFormat: string): Promise<Blob> => {
+  const convertMedia = async (file: File, targetFormat: string, onProgress?: (p: number) => void): Promise<Blob> => {
     if (!isReady) throw new Error('转换引擎未就绪');
     
     const ffmpeg = ffmpegRef.current;
     
-    // Sanitize filename for ffmpeg
-    const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-    const inputName = `input_${Date.now()}_${safeName}`;
-    const outputName = `output_${Date.now()}.${targetFormat}`;
+    // Set up progress listener for this specific conversion
+    const progressHandler = ({ progress }: { progress: number }) => {
+      if (onProgress) onProgress(progress);
+    };
+    ffmpeg.on('progress', progressHandler);
     
-    await ffmpeg.writeFile(inputName, await fetchFile(file));
-    
-    // Run FFmpeg command
-    await ffmpeg.exec(['-i', inputName, '-y', outputName]);
-    
-    const data = await ffmpeg.readFile(outputName);
-    
-    // Clean up
-    await ffmpeg.deleteFile(inputName);
-    await ffmpeg.deleteFile(outputName);
-    
-    // Determine mime type
-    let mimeType = '';
-    const formatInfo = SUPPORTED_FORMATS.find(f => f.value === targetFormat);
-    if (formatInfo?.type === 'video') {
-      mimeType = `video/${targetFormat}`;
-      if (targetFormat === 'mkv') mimeType = 'video/x-matroska';
-    } else {
-      mimeType = `audio/${targetFormat}`;
-      if (targetFormat === 'mp3') mimeType = 'audio/mpeg';
-      if (targetFormat === 'm4a') mimeType = 'audio/mp4';
+    try {
+      // Sanitize filename for ffmpeg
+      const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+      const inputName = `input_${Date.now()}_${safeName}`;
+      const outputName = `output_${Date.now()}.${targetFormat}`;
+      
+      await ffmpeg.writeFile(inputName, await fetchFile(file));
+      
+      // Build FFmpeg command
+      const args = ['-i', inputName];
+      
+      // Add compatibility flags for common formats
+      if (targetFormat === 'mp4') {
+        args.push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-c:a', 'aac', '-strict', '-2');
+      } else if (targetFormat === 'webm') {
+        args.push('-c:v', 'libvpx', '-b:v', '1M', '-c:a', 'libvorbis');
+      }
+      
+      args.push('-y', outputName);
+      
+      // Run FFmpeg command
+      const exitCode = await ffmpeg.exec(args);
+      
+      if (exitCode !== 0) {
+        throw new Error(`FFmpeg 转换失败 (退出代码: ${exitCode})。请尝试转换较小的文件或更换格式。`);
+      }
+      
+      const data = await ffmpeg.readFile(outputName);
+      
+      // Clean up
+      await ffmpeg.deleteFile(inputName);
+      await ffmpeg.deleteFile(outputName);
+      
+      // Determine mime type
+      let mimeType = '';
+      const formatInfo = SUPPORTED_FORMATS.find(f => f.value === targetFormat);
+      if (formatInfo?.type === 'video') {
+        mimeType = `video/${targetFormat}`;
+        if (targetFormat === 'mkv') mimeType = 'video/x-matroska';
+        if (targetFormat === 'mov') mimeType = 'video/quicktime';
+      } else {
+        mimeType = `audio/${targetFormat}`;
+        if (targetFormat === 'mp3') mimeType = 'audio/mpeg';
+        if (targetFormat === 'm4a') mimeType = 'audio/mp4';
+      }
+      
+      return new Blob([data], { type: mimeType });
+    } finally {
+      // Clean up progress listener
+      ffmpeg.off('progress', progressHandler);
     }
-    
-    return new Blob([data], { type: mimeType });
   };
 
   const processFile = async (id: string, file: File, format: string) => {
     setFiles((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, status: 'converting', targetFormat: format } : f))
+      prev.map((f) => (f.id === id ? { ...f, status: 'converting', targetFormat: format, progress: 0 } : f))
     );
 
     try {
-      const convertedBlob = await convertAudio(file, format);
+      const convertedBlob = await convertMedia(file, format, (progress) => {
+        setFiles((prev) =>
+          prev.map((f) => (f.id === id ? { ...f, progress: Math.round(progress * 100) } : f))
+        );
+      });
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id
@@ -147,6 +180,7 @@ export function MediaConverter() {
                 ...f,
                 convertedBlob,
                 status: 'success',
+                progress: 100,
               }
             : f
         )
@@ -156,7 +190,7 @@ export function MediaConverter() {
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, status: 'error', error: error instanceof Error ? error.message : '转换失败' }
+            ? { ...f, status: 'error', error: error instanceof Error ? error.message : '转换失败', progress: 0 }
             : f
         )
       );
@@ -397,11 +431,20 @@ export function MediaConverter() {
                           </optgroup>
                         </select>
 
-                        <div className="w-24 flex justify-end">
+                        <div className="w-24 flex flex-col items-end justify-center">
                           {isConverting && (
-                            <div className="flex items-center text-slate-500 text-sm">
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              转换中...
+                            <div className="flex flex-col items-end">
+                              <div className="flex items-center text-slate-500 text-xs mb-1">
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                转换中...
+                              </div>
+                              <div className="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-rose-500 transition-all duration-300" 
+                                  style={{ width: `${file.progress || 0}%` }}
+                                />
+                              </div>
+                              <span className="text-[10px] text-slate-400 mt-0.5">{file.progress || 0}%</span>
                             </div>
                           )}
 
