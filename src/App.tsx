@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ImageCompressor } from './components/ImageCompressor';
 import { PlaceholderTool } from './components/PlaceholderTool';
 import { MockupGenerator } from './components/MockupGenerator';
+import { FormatConverter } from './components/FormatConverter';
 import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone } from 'lucide-react';
 
 type Tab = 'image' | 'mockup' | 'pdf' | 'converter';
@@ -105,12 +106,7 @@ export default function App() {
             description="轻松合并、拆分和压缩 PDF 文件。" 
           />
         )}
-        {activeTab === 'converter' && (
-          <PlaceholderTool 
-            title="格式转换" 
-            description="在 WebP、PNG、JPEG 等格式之间转换图片。" 
-          />
-        )}
+        {activeTab === 'converter' && <FormatConverter />}
       </div>
 
       {/* Footer */}
