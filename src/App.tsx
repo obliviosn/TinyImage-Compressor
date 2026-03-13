@@ -3,9 +3,10 @@ import { ImageCompressor } from './components/ImageCompressor';
 import { PlaceholderTool } from './components/PlaceholderTool';
 import { MockupGenerator } from './components/MockupGenerator';
 import { FormatConverter } from './components/FormatConverter';
-import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone } from 'lucide-react';
+import { AudioConverter } from './components/AudioConverter';
+import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone, Music } from 'lucide-react';
 
-type Tab = 'image' | 'mockup' | 'pdf' | 'converter';
+type Tab = 'image' | 'mockup' | 'pdf' | 'converter' | 'audio';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('image');
@@ -16,6 +17,7 @@ export default function App() {
     { id: 'mockup', name: '带壳截图', icon: MonitorSmartphone },
     { id: 'pdf', name: 'PDF 工具', icon: FileText },
     { id: 'converter', name: '格式转换', icon: Settings },
+    { id: 'audio', name: '音频转换', icon: Music },
   ] as const;
 
   return (
@@ -107,6 +109,7 @@ export default function App() {
           />
         )}
         {activeTab === 'converter' && <FormatConverter />}
+        {activeTab === 'audio' && <AudioConverter />}
       </div>
 
       {/* Footer */}

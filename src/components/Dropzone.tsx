@@ -6,7 +6,7 @@ interface DropzoneProps {
   accept?: string;
   title?: string;
   subtitle?: string;
-  colorTheme?: 'emerald' | 'indigo';
+  colorTheme?: 'emerald' | 'indigo' | 'rose';
 }
 
 export function Dropzone({ 
@@ -42,11 +42,12 @@ export function Dropzone({
       setIsDragActive(false);
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        const files = Array.from(e.dataTransfer.files).filter((file: File) =>
-          file.type.startsWith('image/') || 
-          file.name.toLowerCase().endsWith('.heic') || 
-          file.name.toLowerCase().endsWith('.heif')
-        );
+        const files = Array.from(e.dataTransfer.files).filter((file: File) => {
+          if (accept.includes('audio/*')) return file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|wma)$/i);
+          return file.type.startsWith('image/') || 
+                 file.name.toLowerCase().endsWith('.heic') || 
+                 file.name.toLowerCase().endsWith('.heif');
+        });
         if (files.length > 0) {
           onFilesAdded(files);
         }
@@ -58,11 +59,12 @@ export function Dropzone({
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        const files = Array.from(e.target.files).filter((file: File) =>
-          file.type.startsWith('image/') || 
-          file.name.toLowerCase().endsWith('.heic') || 
-          file.name.toLowerCase().endsWith('.heif')
-        );
+        const files = Array.from(e.target.files).filter((file: File) => {
+          if (accept.includes('audio/*')) return file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|wma)$/i);
+          return file.type.startsWith('image/') || 
+                 file.name.toLowerCase().endsWith('.heic') || 
+                 file.name.toLowerCase().endsWith('.heif');
+        });
         if (files.length > 0) {
           onFilesAdded(files);
         }
@@ -75,8 +77,8 @@ export function Dropzone({
     <div
       className={`relative flex flex-col items-center justify-center w-full max-w-3xl p-12 mx-auto mt-8 border-4 border-dashed rounded-3xl transition-colors duration-300 ease-in-out cursor-pointer ${
         isDragActive
-          ? colorTheme === 'emerald' ? 'border-emerald-500 bg-emerald-50/50' : 'border-indigo-500 bg-indigo-50/50'
-          : colorTheme === 'emerald' ? 'border-slate-300 bg-white hover:border-emerald-400 hover:bg-slate-50' : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50'
+          ? colorTheme === 'emerald' ? 'border-emerald-500 bg-emerald-50/50' : colorTheme === 'rose' ? 'border-rose-500 bg-rose-50/50' : 'border-indigo-500 bg-indigo-50/50'
+          : colorTheme === 'emerald' ? 'border-slate-300 bg-white hover:border-emerald-400 hover:bg-slate-50' : colorTheme === 'rose' ? 'border-slate-300 bg-white hover:border-rose-400 hover:bg-slate-50' : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50'
       }`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
@@ -93,7 +95,7 @@ export function Dropzone({
         onChange={handleFileInput}
       />
       <div className="flex flex-col items-center justify-center space-y-4 text-center">
-        <div className={`p-4 rounded-full ${isDragActive ? (colorTheme === 'emerald' ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600') : 'bg-slate-100 text-slate-500'}`}>
+        <div className={`p-4 rounded-full ${isDragActive ? (colorTheme === 'emerald' ? 'bg-emerald-100 text-emerald-600' : colorTheme === 'rose' ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600') : 'bg-slate-100 text-slate-500'}`}>
           <UploadCloud className="w-12 h-12" />
         </div>
         <div>
