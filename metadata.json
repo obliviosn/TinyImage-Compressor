@@ -1,0 +1,5 @@
+{
+  "name": "TinyImage Compressor",
+  "description": "A client-side image compression tool inspired by TinyPNG, built with React.",
+  "requestFramePermissions": []
+}
