@@ -7,8 +7,31 @@ import workerURL from '../ffmpeg-worker?worker&url';
 import coreURL from '@ffmpeg/core?url';
 import wasmURL from '@ffmpeg/core/wasm?url';
 import { Dropzone } from './Dropzone';
-import { Settings, DownloadCloud, Loader2, AlertCircle, Download, ArrowRight, Music } from 'lucide-react';
+import { Settings, DownloadCloud, Loader2, AlertCircle, Download, ArrowRight, Music, Clock, HardDrive } from 'lucide-react';
 import { formatBytes } from '../utils/format';
+
+const getAudioDuration = (file: File): Promise<number> => {
+  return new Promise((resolve) => {
+    const audio = new Audio();
+    const objectUrl = URL.createObjectURL(file);
+    audio.addEventListener('loadedmetadata', () => {
+      resolve(audio.duration);
+      URL.revokeObjectURL(objectUrl);
+    });
+    audio.addEventListener('error', () => {
+      resolve(0);
+      URL.revokeObjectURL(objectUrl);
+    });
+    audio.src = objectUrl;
+  });
+};
+
+const formatDuration = (seconds: number) => {
+  if (!seconds || !isFinite(seconds)) return '';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
 
 interface ConvertedAudio {
   id: string;
@@ -17,6 +40,7 @@ interface ConvertedAudio {
   status: 'pending' | 'converting' | 'success' | 'error';
   targetFormat: string;
   error?: string;
+  duration?: number;
 }
 
 const SUPPORTED_FORMATS = [
@@ -124,14 +148,25 @@ export function AudioConverter() {
     }
   };
 
-  const handleFilesAdded = (newFiles: File[]) => {
-    const newConvertedFiles: ConvertedAudio[] = newFiles.map((file) => ({
-      id: Math.random().toString(36).substring(7),
-      originalFile: file,
-      convertedBlob: null,
-      status: 'pending',
-      targetFormat: globalTargetFormat,
-    }));
+  const handleFilesAdded = async (newFiles: File[]) => {
+    const newConvertedFiles: ConvertedAudio[] = await Promise.all(
+      newFiles.map(async (file) => {
+        let duration = 0;
+        try {
+          duration = await getAudioDuration(file);
+        } catch (e) {
+          console.error("Failed to get duration", e);
+        }
+        return {
+          id: Math.random().toString(36).substring(7),
+          originalFile: file,
+          convertedBlob: null,
+          status: 'pending',
+          targetFormat: globalTargetFormat,
+          duration,
+        };
+      })
+    );
 
     setFiles((prev) => [...prev, ...newConvertedFiles]);
 
@@ -289,15 +324,30 @@ export function AudioConverter() {
                     <div key={file.id} className="flex items-center justify-between p-4 mb-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center flex-1 space-x-4 overflow-hidden">
                         <div className="flex flex-col flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900 truncate">
-                            {file.originalFile.name}
-                          </p>
-                          <div className="flex items-center mt-1 text-xs text-slate-500 space-x-2">
-                            <span>{formatBytes(file.originalFile.size)}</span>
+                          <div className="flex items-center space-x-2">
+                            <p className="text-sm font-medium text-slate-900 truncate">
+                              {file.originalFile.name}
+                            </p>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-500 bg-slate-100 rounded-md uppercase flex-shrink-0">
+                              {file.originalFile.name.split('.').pop()}
+                            </span>
+                          </div>
+                          <div className="flex items-center mt-1.5 text-xs text-slate-500 space-x-3">
+                            <span className="flex items-center">
+                              <HardDrive className="w-3 h-3 mr-1" />
+                              {formatBytes(file.originalFile.size)}
+                            </span>
+                            {file.duration ? (
+                              <span className="flex items-center">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {formatDuration(file.duration)}
+                              </span>
+                            ) : null}
                             {isSuccess && file.convertedBlob && (
                               <>
                                 <ArrowRight className="w-3 h-3 text-slate-400" />
-                                <span className="font-medium text-rose-600">
+                                <span className="flex items-center font-medium text-rose-600">
+                                  <HardDrive className="w-3 h-3 mr-1" />
                                   {formatBytes(file.convertedBlob.size)}
                                 </span>
                               </>
