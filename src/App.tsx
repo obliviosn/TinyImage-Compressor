@@ -3,11 +3,11 @@ import { ImageCompressor } from './components/ImageCompressor';
 import { PlaceholderTool } from './components/PlaceholderTool';
 import { MockupGenerator } from './components/MockupGenerator';
 import { FormatConverter } from './components/FormatConverter';
-import { AudioConverter } from './components/AudioConverter';
+import { MediaConverter } from './components/MediaConverter';
 import { DevTools } from './components/DevTools';
-import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone, Music, Code2 } from 'lucide-react';
+import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone, Music, Code2, Film } from 'lucide-react';
 
-type Tab = 'image' | 'mockup' | 'pdf' | 'converter' | 'audio' | 'devtools';
+type Tab = 'image' | 'mockup' | 'pdf' | 'converter' | 'media' | 'devtools';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('image');
@@ -18,7 +18,7 @@ export default function App() {
     { id: 'mockup', name: '带壳截图', icon: MonitorSmartphone },
     { id: 'pdf', name: 'PDF 工具', icon: FileText },
     { id: 'converter', name: '格式转换', icon: Settings },
-    { id: 'audio', name: '音频转换', icon: Music },
+    { id: 'media', name: '多媒体转换', icon: Film },
     { id: 'devtools', name: '开发工具', icon: Code2 },
   ] as const;
 
@@ -111,7 +111,7 @@ export default function App() {
           />
         )}
         {activeTab === 'converter' && <FormatConverter />}
-        {activeTab === 'audio' && <AudioConverter />}
+        {activeTab === 'media' && <MediaConverter />}
         {activeTab === 'devtools' && <DevTools />}
       </div>
 

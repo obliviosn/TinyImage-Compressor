@@ -7,22 +7,23 @@ import workerURL from '../ffmpeg-worker?worker&url';
 import coreURL from '@ffmpeg/core?url';
 import wasmURL from '@ffmpeg/core/wasm?url';
 import { Dropzone } from './Dropzone';
-import { Settings, DownloadCloud, Loader2, AlertCircle, Download, ArrowRight, Music, Clock, HardDrive } from 'lucide-react';
+import { Settings, DownloadCloud, Loader2, AlertCircle, Download, ArrowRight, Music, Clock, HardDrive, Film } from 'lucide-react';
 import { formatBytes } from '../utils/format';
 
-const getAudioDuration = (file: File): Promise<number> => {
+const getMediaDuration = (file: File): Promise<number> => {
   return new Promise((resolve) => {
-    const audio = new Audio();
+    const isVideo = file.type.startsWith('video/');
+    const media = isVideo ? document.createElement('video') : new Audio();
     const objectUrl = URL.createObjectURL(file);
-    audio.addEventListener('loadedmetadata', () => {
-      resolve(audio.duration);
+    media.addEventListener('loadedmetadata', () => {
+      resolve(media.duration);
       URL.revokeObjectURL(objectUrl);
     });
-    audio.addEventListener('error', () => {
+    media.addEventListener('error', () => {
       resolve(0);
       URL.revokeObjectURL(objectUrl);
     });
-    audio.src = objectUrl;
+    media.src = objectUrl;
   });
 };
 
@@ -44,15 +45,22 @@ interface ConvertedAudio {
 }
 
 const SUPPORTED_FORMATS = [
-  { value: 'mp3', label: 'MP3' },
-  { value: 'wav', label: 'WAV' },
-  { value: 'ogg', label: 'OGG' },
-  { value: 'aac', label: 'AAC' },
-  { value: 'flac', label: 'FLAC' },
-  { value: 'm4a', label: 'M4A' },
+  // Audio
+  { value: 'mp3', label: 'MP3', type: 'audio' },
+  { value: 'wav', label: 'WAV', type: 'audio' },
+  { value: 'ogg', label: 'OGG', type: 'audio' },
+  { value: 'aac', label: 'AAC', type: 'audio' },
+  { value: 'flac', label: 'FLAC', type: 'audio' },
+  { value: 'm4a', label: 'M4A', type: 'audio' },
+  // Video
+  { value: 'mp4', label: 'MP4', type: 'video' },
+  { value: 'webm', label: 'WEBM', type: 'video' },
+  { value: 'avi', label: 'AVI', type: 'video' },
+  { value: 'mov', label: 'MOV', type: 'video' },
+  { value: 'mkv', label: 'MKV', type: 'video' },
 ];
 
-export function AudioConverter() {
+export function MediaConverter() {
   const [files, setFiles] = useState<ConvertedAudio[]>([]);
   const [globalTargetFormat, setGlobalTargetFormat] = useState('mp3');
   const [isReady, setIsReady] = useState(false);
@@ -111,9 +119,16 @@ export function AudioConverter() {
     await ffmpeg.deleteFile(outputName);
     
     // Determine mime type
-    let mimeType = `audio/${targetFormat}`;
-    if (targetFormat === 'mp3') mimeType = 'audio/mpeg';
-    if (targetFormat === 'm4a') mimeType = 'audio/mp4';
+    let mimeType = '';
+    const formatInfo = SUPPORTED_FORMATS.find(f => f.value === targetFormat);
+    if (formatInfo?.type === 'video') {
+      mimeType = `video/${targetFormat}`;
+      if (targetFormat === 'mkv') mimeType = 'video/x-matroska';
+    } else {
+      mimeType = `audio/${targetFormat}`;
+      if (targetFormat === 'mp3') mimeType = 'audio/mpeg';
+      if (targetFormat === 'm4a') mimeType = 'audio/mp4';
+    }
     
     return new Blob([data], { type: mimeType });
   };
@@ -153,7 +168,7 @@ export function AudioConverter() {
       newFiles.map(async (file) => {
         let duration = 0;
         try {
-          duration = await getAudioDuration(file);
+          duration = await getMediaDuration(file);
         } catch (e) {
           console.error("Failed to get duration", e);
         }
@@ -234,14 +249,14 @@ export function AudioConverter() {
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-center mb-6 space-x-3">
             <div className="p-3 bg-white rounded-2xl shadow-lg">
-              <Music className="w-10 h-10 text-rose-500" />
+              <Film className="w-10 h-10 text-rose-500" />
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-              音频格式转换
+              多媒体格式转换
             </h1>
           </div>
           <p className="max-w-2xl mx-auto text-xl font-medium text-rose-50 sm:text-2xl">
-            支持 MP3、WAV、OGG、FLAC 等所有主流音频格式互相转换
+            支持 MP4、WEBM、MP3、WAV 等所有主流音视频格式互相转换
           </p>
         </div>
       </header>
@@ -253,7 +268,7 @@ export function AudioConverter() {
           <div className="mb-6 flex flex-col sm:flex-row items-center justify-between bg-rose-50 p-4 rounded-2xl border border-rose-100">
             <div className="mb-4 sm:mb-0">
               <h3 className="text-lg font-semibold text-rose-900">全局转换设置</h3>
-              <p className="text-sm text-rose-700">选择您希望将音频转换成的目标格式</p>
+              <p className="text-sm text-rose-700">选择您希望将文件转换成的目标格式</p>
             </div>
             <div className="flex items-center space-x-3">
               <span className="text-sm font-medium text-rose-800">转换为:</span>
@@ -262,25 +277,32 @@ export function AudioConverter() {
                 onChange={handleGlobalFormatChange}
                 className="block w-32 pl-3 pr-10 py-2 text-base border-rose-300 focus:outline-none focus:ring-rose-500 focus:border-rose-500 sm:text-sm rounded-xl bg-white shadow-sm"
               >
-                {SUPPORTED_FORMATS.map(fmt => (
-                  <option key={fmt.value} value={fmt.value}>{fmt.label}</option>
-                ))}
+                <optgroup label="视频格式">
+                  {SUPPORTED_FORMATS.filter(f => f.type === 'video').map(fmt => (
+                    <option key={fmt.value} value={fmt.value}>{fmt.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="音频格式">
+                  {SUPPORTED_FORMATS.filter(f => f.type === 'audio').map(fmt => (
+                    <option key={fmt.value} value={fmt.value}>{fmt.label}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
           </div>
 
           <Dropzone 
             onFilesAdded={handleFilesAdded} 
-            accept="audio/*"
-            title="将您的音频文件拖放到此处！"
-            subtitle="支持 MP3, WAV, FLAC, M4A, OGG 等任意格式，批量转换。"
+            accept="audio/*,video/*"
+            title="将您的音视频文件拖放到此处！"
+            subtitle="支持 MP4, WEBM, MP3, WAV, FLAC 等任意格式，批量转换。"
             colorTheme="rose"
           />
 
           {!isReady && !loadError && (
             <div className="mt-6 text-center text-slate-500 flex items-center justify-center">
               <Loader2 className="w-5 h-5 mr-2 animate-spin text-rose-500" />
-              正在加载音频转换引擎 (FFmpeg)...
+              正在加载多媒体转换引擎 (FFmpeg)...
             </div>
           )}
 
@@ -363,9 +385,16 @@ export function AudioConverter() {
                           disabled={isConverting}
                           className="block w-24 pl-2 pr-8 py-1.5 text-xs border-slate-300 focus:outline-none focus:ring-rose-500 focus:border-rose-500 rounded-lg bg-slate-50"
                         >
-                          {SUPPORTED_FORMATS.map(fmt => (
-                            <option key={fmt.value} value={fmt.value}>{fmt.label}</option>
-                          ))}
+                          <optgroup label="视频格式">
+                            {SUPPORTED_FORMATS.filter(f => f.type === 'video').map(fmt => (
+                              <option key={fmt.value} value={fmt.value}>{fmt.label}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="音频格式">
+                            {SUPPORTED_FORMATS.filter(f => f.type === 'audio').map(fmt => (
+                              <option key={fmt.value} value={fmt.value}>{fmt.label}</option>
+                            ))}
+                          </optgroup>
                         </select>
 
                         <div className="w-24 flex justify-end">
