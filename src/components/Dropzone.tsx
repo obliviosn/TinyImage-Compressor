@@ -43,10 +43,15 @@ export function Dropzone({
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const files = Array.from(e.dataTransfer.files).filter((file: File) => {
-          if (accept.includes('audio/*')) return file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|wma)$/i);
-          return file.type.startsWith('image/') || 
-                 file.name.toLowerCase().endsWith('.heic') || 
-                 file.name.toLowerCase().endsWith('.heif');
+          const isAudio = accept.includes('audio/*') && (file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|wma)$/i));
+          const isVideo = accept.includes('video/*') && (file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|avi|mov|mkv|flv|wmv)$/i));
+          const isImage = (accept.includes('image/*') || accept.includes('image/')) && (
+            file.type.startsWith('image/') || 
+            file.name.toLowerCase().endsWith('.heic') || 
+            file.name.toLowerCase().endsWith('.heif')
+          );
+          
+          return isAudio || isVideo || isImage;
         });
         if (files.length > 0) {
           onFilesAdded(files);
@@ -60,10 +65,15 @@ export function Dropzone({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
         const files = Array.from(e.target.files).filter((file: File) => {
-          if (accept.includes('audio/*')) return file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|wma)$/i);
-          return file.type.startsWith('image/') || 
-                 file.name.toLowerCase().endsWith('.heic') || 
-                 file.name.toLowerCase().endsWith('.heif');
+          const isAudio = accept.includes('audio/*') && (file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|aac|flac|m4a|wma)$/i));
+          const isVideo = accept.includes('video/*') && (file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|avi|mov|mkv|flv|wmv)$/i));
+          const isImage = (accept.includes('image/*') || accept.includes('image/')) && (
+            file.type.startsWith('image/') || 
+            file.name.toLowerCase().endsWith('.heic') || 
+            file.name.toLowerCase().endsWith('.heif')
+          );
+          
+          return isAudio || isVideo || isImage;
         });
         if (files.length > 0) {
           onFilesAdded(files);

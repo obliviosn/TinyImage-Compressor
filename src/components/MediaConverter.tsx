@@ -34,7 +34,7 @@ const formatDuration = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-interface ConvertedAudio {
+interface ConvertedMedia {
   id: string;
   originalFile: File;
   convertedBlob: Blob | null;
@@ -61,7 +61,7 @@ const SUPPORTED_FORMATS = [
 ];
 
 export function MediaConverter() {
-  const [files, setFiles] = useState<ConvertedAudio[]>([]);
+  const [files, setFiles] = useState<ConvertedMedia[]>([]);
   const [globalTargetFormat, setGlobalTargetFormat] = useState('mp3');
   const [isReady, setIsReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -164,7 +164,7 @@ export function MediaConverter() {
   };
 
   const handleFilesAdded = async (newFiles: File[]) => {
-    const newConvertedFiles: ConvertedAudio[] = await Promise.all(
+    const newConvertedFiles: ConvertedMedia[] = await Promise.all(
       newFiles.map(async (file) => {
         let duration = 0;
         try {
@@ -256,7 +256,7 @@ export function MediaConverter() {
             </h1>
           </div>
           <p className="max-w-2xl mx-auto text-xl font-medium text-rose-50 sm:text-2xl">
-            支持 MP4、WEBM、MP3、WAV 等所有主流音视频格式互相转换
+            支持 MP4、WEBM、MP3、WAV 等所有主流多媒体格式互相转换
           </p>
         </div>
       </header>
@@ -294,7 +294,7 @@ export function MediaConverter() {
           <Dropzone 
             onFilesAdded={handleFilesAdded} 
             accept="audio/*,video/*"
-            title="将您的音视频文件拖放到此处！"
+            title="将您的多媒体文件拖放到此处！"
             subtitle="支持 MP4, WEBM, MP3, WAV, FLAC 等任意格式，批量转换。"
             colorTheme="rose"
           />
