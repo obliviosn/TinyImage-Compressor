@@ -15,21 +15,27 @@ export function MockupGenerator() {
   const [mobileType, setMobileType] = useState<MobileType>('iphone');
   const [bgColor, setBgColor] = useState<string>('bg-gradient-to-br from-indigo-500 to-purple-600');
   const [padding, setPadding] = useState<Padding>('md');
+  const [isExporting, setIsExporting] = useState(false);
   const mockupRef = useRef<HTMLDivElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setImage(url);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImage(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleDownload = useCallback(async () => {
     if (mockupRef.current) {
       try {
+        setIsExporting(true);
         const dataUrl = await toPng(mockupRef.current, { 
-          cacheBust: true, 
           pixelRatio: 2,
           style: {
             transform: 'scale(1)',
@@ -39,6 +45,9 @@ export function MockupGenerator() {
         saveAs(dataUrl, 'mockup.png');
       } catch (err) {
         console.error('Failed to generate mockup', err);
+        alert('导出失败，请重试。错误信息: ' + (err instanceof Error ? err.message : String(err)));
+      } finally {
+        setIsExporting(false);
       }
     }
   }, []);
@@ -232,11 +241,20 @@ export function MockupGenerator() {
           {/* Download */}
           <button
             onClick={handleDownload}
-            disabled={!image}
-            className={`w-full flex items-center justify-center py-3 px-4 rounded-xl font-semibold text-white transition-colors ${image ? 'bg-emerald-500 hover:bg-emerald-600 shadow-md hover:shadow-lg' : 'bg-slate-300 cursor-not-allowed'}`}
+            disabled={!image || isExporting}
+            className={`w-full flex items-center justify-center py-3 px-4 rounded-xl font-semibold text-white transition-colors ${!image || isExporting ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 shadow-md hover:shadow-lg'}`}
           >
-            <Download className="w-5 h-5 mr-2" />
-            导出截图
+            {isExporting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                导出中...
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5 mr-2" />
+                导出截图
+              </>
+            )}
           </button>
         </div>
       </div>
