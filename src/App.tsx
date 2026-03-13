@@ -4,9 +4,10 @@ import { PlaceholderTool } from './components/PlaceholderTool';
 import { MockupGenerator } from './components/MockupGenerator';
 import { FormatConverter } from './components/FormatConverter';
 import { AudioConverter } from './components/AudioConverter';
-import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone, Music } from 'lucide-react';
+import { DevTools } from './components/DevTools';
+import { Leaf, FileText, Settings, Menu, X, MonitorSmartphone, Music, Code2 } from 'lucide-react';
 
-type Tab = 'image' | 'mockup' | 'pdf' | 'converter' | 'audio';
+type Tab = 'image' | 'mockup' | 'pdf' | 'converter' | 'audio' | 'devtools';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('image');
@@ -18,6 +19,7 @@ export default function App() {
     { id: 'pdf', name: 'PDF 工具', icon: FileText },
     { id: 'converter', name: '格式转换', icon: Settings },
     { id: 'audio', name: '音频转换', icon: Music },
+    { id: 'devtools', name: '开发工具', icon: Code2 },
   ] as const;
 
   return (
@@ -110,6 +112,7 @@ export default function App() {
         )}
         {activeTab === 'converter' && <FormatConverter />}
         {activeTab === 'audio' && <AudioConverter />}
+        {activeTab === 'devtools' && <DevTools />}
       </div>
 
       {/* Footer */}
